@@ -53,8 +53,9 @@ export default {
           this.resultJson = JSON.stringify(data, null, 2)
           this.$message.success('请求成功')
         } catch (e) {
-          this.$message.error(e.message)
-          this.resultJson = e.message
+          const message = e.message || '发送失败'
+          this.$message.error(message)
+          this.resultJson = message
         } finally {
           this.loading = false
         }
