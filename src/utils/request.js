@@ -17,6 +17,17 @@ request.interceptors.request.use(config => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  const data = config.data
+  if (
+    data &&
+    typeof data === 'object' &&
+    !(data instanceof FormData) &&
+    !(data instanceof URLSearchParams) &&
+    !(data instanceof ArrayBuffer)
+  ) {
+    config.headers['Content-Type'] = 'application/json;charset=UTF-8'
+    config.data = JSON.stringify(data)
+  }
   return config
 })
 

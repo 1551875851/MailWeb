@@ -67,6 +67,7 @@
 
 <script>
 import { listMenus, createMenu, updateMenu, deleteMenu } from '@/api/system'
+import { logOperation, logQuery } from '@/utils/operLog'
 
 export default {
   name: 'MenuManage',
@@ -105,7 +106,10 @@ export default {
         status: 1
       }
     },
-    async loadData() {
+    async loadData(needLog = true) {
+      if (needLog) {
+        await logQuery('菜单管理', '系统管理')
+      }
       this.tableData = await listMenus()
     },
     openDialog(row) {
@@ -119,8 +123,10 @@ export default {
         try {
           if (this.form.id) {
             await updateMenu(this.form.id, this.form)
+            await logOperation({ operType: 'UPDATE', operDesc: `修改菜单：${this.form.menuName}` })
           } else {
             await createMenu(this.form)
+            await logOperation({ operType: 'CREATE', operDesc: `新增菜单：${this.form.menuName}` })
           }
           this.$message.success('保存成功')
           this.dialogVisible = false
@@ -136,6 +142,7 @@ export default {
       this.$confirm(`确认删除菜单 ${row.menuName} 吗？`, '提示', { type: 'warning' })
         .then(async () => {
           await deleteMenu(row.id)
+          await logOperation({ operType: 'DELETE', operDesc: `删除菜单：${row.menuName}` })
           this.$message.success('删除成功')
           this.loadData()
         })

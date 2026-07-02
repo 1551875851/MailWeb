@@ -1,8 +1,9 @@
 <template>
   <el-container class="layout">
     <el-aside width="240px" class="aside">
-      <div class="logo">MailWeb</div>
+      <div class="logo">邮件管理平台</div>
       <el-menu
+        v-loading="menuLoading"
         :default-active="activeMenu"
         background-color="#304156"
         text-color="#bfcbd9"
@@ -10,7 +11,11 @@
         router
       >
         <template v-for="menu in menus">
-          <el-submenu v-if="menu.menuType === 'DIR'" :key="'dir-' + menu.id" :index="'dir-' + menu.id">
+          <el-submenu
+            v-if="menu.menuType === 'DIR'"
+            :key="'dir-' + menu.id"
+            :index="'dir-' + menu.id"
+          >
             <template slot="title">
               <i :class="menu.icon || 'el-icon-folder'"></i>
               <span>{{ menu.menuName }}</span>
@@ -24,7 +29,11 @@
               <span slot="title">{{ child.menuName }}</span>
             </el-menu-item>
           </el-submenu>
-          <el-menu-item v-else-if="menu.menuType === 'MENU'" :key="'menu-' + menu.id" :index="menu.path">
+          <el-menu-item
+            v-else-if="menu.menuType === 'MENU'"
+            :key="'menu-' + menu.id"
+            :index="menu.path"
+          >
             <i :class="menu.icon || 'el-icon-document'"></i>
             <span slot="title">{{ menu.menuName }}</span>
           </el-menu-item>
@@ -47,11 +56,14 @@
 </template>
 
 <script>
+import { getCurrentUser } from '@/api/auth'
+
 export default {
   name: 'Layout',
   data() {
     return {
-      menus: []
+      menus: [],
+      menuLoading: false
     }
   },
   computed: {
@@ -71,14 +83,30 @@ export default {
     }
   },
   created() {
-    this.loadMenus()
+    this.loadMenusFromStorage()
+    this.refreshMenus()
   },
   methods: {
-    loadMenus() {
+    loadMenusFromStorage() {
       try {
         this.menus = JSON.parse(localStorage.getItem('mailweb_menus') || '[]')
       } catch (e) {
         this.menus = []
+      }
+    },
+    async refreshMenus() {
+      this.menuLoading = true
+      try {
+        const data = await getCurrentUser()
+        this.menus = data.menus || []
+        localStorage.setItem('mailweb_user', JSON.stringify(data.user || {}))
+        localStorage.setItem('mailweb_menus', JSON.stringify(this.menus))
+      } catch (e) {
+        if (!this.menus.length) {
+          this.logout()
+        }
+      } finally {
+        this.menuLoading = false
       }
     },
     logout() {

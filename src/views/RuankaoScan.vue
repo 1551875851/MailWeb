@@ -23,6 +23,7 @@
 
 <script>
 import { scanRuankao } from '@/api/mail'
+import { logAction } from '@/utils/operLog'
 
 export default {
   name: 'RuankaoScan',
@@ -40,6 +41,7 @@ export default {
       this.resultJson = ''
       try {
         const data = await scanRuankao()
+        await logAction('执行软考扫描', { requestMethod: 'POST', requestUri: '/api/ruankao/scan' })
         this.result = data
         this.resultJson = JSON.stringify(data, null, 2)
         this.$message.success('扫描完成')

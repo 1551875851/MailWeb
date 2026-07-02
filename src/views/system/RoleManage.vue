@@ -57,6 +57,7 @@
 
 <script>
 import { listRoles, getRole, createRole, updateRole, deleteRole, listMenuTree } from '@/api/system'
+import { logOperation, logQuery } from '@/utils/operLog'
 
 export default {
   name: 'RoleManage',
@@ -80,7 +81,10 @@ export default {
     emptyForm() {
       return { id: null, roleCode: '', roleName: '', remark: '', status: 1 }
     },
-    async loadData() {
+    async loadData(needLog = true) {
+      if (needLog) {
+        await logQuery('角色管理', '系统管理')
+      }
       const [roles, menus] = await Promise.all([listRoles(), listMenuTree()])
       this.tableData = roles
       this.menuTree = menus
@@ -112,8 +116,10 @@ export default {
           const payload = { role: { ...this.form }, menuIds }
           if (this.form.id) {
             await updateRole(this.form.id, payload)
+            await logOperation({ operType: 'UPDATE', operDesc: `修改角色：${this.form.roleName}` })
           } else {
             await createRole(payload)
+            await logOperation({ operType: 'CREATE', operDesc: `新增角色：${this.form.roleName}` })
           }
           this.$message.success('保存成功')
           this.dialogVisible = false
@@ -129,6 +135,7 @@ export default {
       this.$confirm(`确认删除角色 ${row.roleName} 吗？`, '提示', { type: 'warning' })
         .then(async () => {
           await deleteRole(row.id)
+          await logOperation({ operType: 'DELETE', operDesc: `删除角色：${row.roleName}` })
           this.$message.success('删除成功')
           this.loadData()
         })

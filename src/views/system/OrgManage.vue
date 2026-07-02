@@ -54,6 +54,7 @@
 
 <script>
 import { listOrgs, createOrg, updateOrg, deleteOrg } from '@/api/system'
+import { logOperation, logQuery } from '@/utils/operLog'
 
 export default {
   name: 'OrgManage',
@@ -76,7 +77,10 @@ export default {
     emptyForm() {
       return { id: null, orgName: '', orgCode: '', parentId: 0, sortOrder: 0, status: 1 }
     },
-    async loadData() {
+    async loadData(needLog = true) {
+      if (needLog) {
+        await logQuery('机构管理', '系统管理')
+      }
       this.tableData = await listOrgs()
     },
     openDialog(row) {
@@ -90,8 +94,10 @@ export default {
         try {
           if (this.form.id) {
             await updateOrg(this.form.id, this.form)
+            await logOperation({ operType: 'UPDATE', operDesc: `修改机构：${this.form.orgName}` })
           } else {
             await createOrg(this.form)
+            await logOperation({ operType: 'CREATE', operDesc: `新增机构：${this.form.orgName}` })
           }
           this.$message.success('保存成功')
           this.dialogVisible = false
@@ -107,6 +113,7 @@ export default {
       this.$confirm(`确认删除机构 ${row.orgName} 吗？`, '提示', { type: 'warning' })
         .then(async () => {
           await deleteOrg(row.id)
+          await logOperation({ operType: 'DELETE', operDesc: `删除机构：${row.orgName}` })
           this.$message.success('删除成功')
           this.loadData()
         })

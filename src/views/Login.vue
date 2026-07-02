@@ -1,8 +1,8 @@
 <template>
   <div class="login-page">
     <el-card class="login-card" shadow="always">
-      <div class="title">MailWeb 管理系统</div>
-      <el-form ref="form" :model="form" :rules="rules" label-width="0">
+      <div class="title">邮件管理平台</div>
+      <el-form ref="form" :model="form" :rules="rules" label-width="0" @submit.native.prevent="handleLogin">
         <el-form-item prop="username">
           <el-input v-model="form.username" prefix-icon="el-icon-user" placeholder="用户名" />
         </el-form-item>
@@ -17,7 +17,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" style="width: 100%" :loading="loading" @click="handleLogin">
+          <el-button type="primary" native-type="button" style="width: 100%" :loading="loading" @click="handleLogin">
             登录
           </el-button>
         </el-form-item>

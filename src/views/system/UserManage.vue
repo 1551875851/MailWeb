@@ -60,6 +60,7 @@
 
 <script>
 import { listUsers, getUser, createUser, updateUser, deleteUser, listRoles, listOrgs } from '@/api/system'
+import { logOperation, logQuery } from '@/utils/operLog'
 
 export default {
   name: 'UserManage',
@@ -85,7 +86,10 @@ export default {
     emptyForm() {
       return { id: null, username: '', password: '', nickname: '', orgId: null, status: 1, isSuperAdmin: 0 }
     },
-    async loadData() {
+    async loadData(needLog = true) {
+      if (needLog) {
+        await logQuery('用户管理', '系统管理')
+      }
       const [users, orgs, roles] = await Promise.all([listUsers(), listOrgs(), listRoles()])
       this.tableData = users
       this.orgList = orgs
@@ -110,8 +114,10 @@ export default {
           const payload = { user: { ...this.form }, roleIds: this.roleIds }
           if (this.form.id) {
             await updateUser(this.form.id, payload)
+            await logOperation({ operType: 'UPDATE', operDesc: `修改用户：${this.form.username}` })
           } else {
             await createUser(payload)
+            await logOperation({ operType: 'CREATE', operDesc: `新增用户：${this.form.username}` })
           }
           this.$message.success('保存成功')
           this.dialogVisible = false
@@ -127,6 +133,7 @@ export default {
       this.$confirm(`确认删除用户 ${row.username} 吗？`, '提示', { type: 'warning' })
         .then(async () => {
           await deleteUser(row.id)
+          await logOperation({ operType: 'DELETE', operDesc: `删除用户：${row.username}` })
           this.$message.success('删除成功')
           this.loadData()
         })

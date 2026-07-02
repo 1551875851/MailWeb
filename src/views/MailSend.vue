@@ -22,6 +22,7 @@
 
 <script>
 import { sendMail } from '@/api/mail'
+import { logAction } from '@/utils/operLog'
 
 export default {
   name: 'MailSend',
@@ -49,6 +50,7 @@ export default {
         this.resultJson = ''
         try {
           const data = await sendMail(this.form)
+          await logAction(`发送邮件：${this.form.subject}`, { requestMethod: 'POST', requestUri: '/api/mail/send' })
           this.result = data
           this.resultJson = JSON.stringify(data, null, 2)
           this.$message.success('请求成功')
