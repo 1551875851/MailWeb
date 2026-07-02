@@ -4,6 +4,10 @@ import Login from '@/views/Login.vue'
 import Layout from '@/views/Layout.vue'
 import MailSend from '@/views/MailSend.vue'
 import RuankaoScan from '@/views/RuankaoScan.vue'
+import UserManage from '@/views/system/UserManage.vue'
+import RoleManage from '@/views/system/RoleManage.vue'
+import OrgManage from '@/views/system/OrgManage.vue'
+import MenuManage from '@/views/system/MenuManage.vue'
 
 Vue.use(VueRouter)
 
@@ -16,20 +20,52 @@ const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/mail',
+    redirect: '/email/mail',
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'mail',
+        path: 'email/mail',
         name: 'MailSend',
         component: MailSend,
         meta: { title: '发送邮件', requiresAuth: true }
       },
       {
-        path: 'ruankao',
+        path: 'email/ruankao',
         name: 'RuankaoScan',
         component: RuankaoScan,
         meta: { title: '软考扫描', requiresAuth: true }
+      },
+      {
+        path: 'system/user',
+        name: 'UserManage',
+        component: UserManage,
+        meta: { title: '用户管理', requiresAuth: true }
+      },
+      {
+        path: 'system/role',
+        name: 'RoleManage',
+        component: RoleManage,
+        meta: { title: '角色管理', requiresAuth: true }
+      },
+      {
+        path: 'system/org',
+        name: 'OrgManage',
+        component: OrgManage,
+        meta: { title: '机构管理', requiresAuth: true }
+      },
+      {
+        path: 'system/menu',
+        name: 'MenuManage',
+        component: MenuManage,
+        meta: { title: '菜单管理', requiresAuth: true }
+      },
+      {
+        path: 'mail',
+        redirect: '/email/mail'
+      },
+      {
+        path: 'ruankao',
+        redirect: '/email/ruankao'
       }
     ]
   }

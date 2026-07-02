@@ -1,6 +1,6 @@
 <template>
   <el-container class="layout">
-    <el-aside width="220px" class="aside">
+    <el-aside width="240px" class="aside">
       <div class="logo">MailWeb</div>
       <el-menu
         :default-active="activeMenu"
@@ -9,21 +9,33 @@
         active-text-color="#409EFF"
         router
       >
-        <el-menu-item index="/mail">
-          <i class="el-icon-message"></i>
-          <span slot="title">发送邮件</span>
-        </el-menu-item>
-        <el-menu-item index="/ruankao">
-          <i class="el-icon-search"></i>
-          <span slot="title">软考扫描</span>
-        </el-menu-item>
+        <template v-for="menu in menus">
+          <el-submenu v-if="menu.menuType === 'DIR'" :key="'dir-' + menu.id" :index="'dir-' + menu.id">
+            <template slot="title">
+              <i :class="menu.icon || 'el-icon-folder'"></i>
+              <span>{{ menu.menuName }}</span>
+            </template>
+            <el-menu-item
+              v-for="child in menu.children || []"
+              :key="child.id"
+              :index="child.path"
+            >
+              <i :class="child.icon || 'el-icon-document'"></i>
+              <span slot="title">{{ child.menuName }}</span>
+            </el-menu-item>
+          </el-submenu>
+          <el-menu-item v-else-if="menu.menuType === 'MENU'" :key="'menu-' + menu.id" :index="menu.path">
+            <i :class="menu.icon || 'el-icon-document'"></i>
+            <span slot="title">{{ menu.menuName }}</span>
+          </el-menu-item>
+        </template>
       </el-menu>
     </el-aside>
     <el-container>
       <el-header class="header">
         <span class="page-title">{{ pageTitle }}</span>
         <div class="user-area">
-          <span>{{ username }}</span>
+          <span>{{ displayName }}</span>
           <el-button type="text" @click="logout">退出</el-button>
         </div>
       </el-header>
@@ -37,6 +49,11 @@
 <script>
 export default {
   name: 'Layout',
+  data() {
+    return {
+      menus: []
+    }
+  },
   computed: {
     activeMenu() {
       return this.$route.path
@@ -44,14 +61,30 @@ export default {
     pageTitle() {
       return (this.$route.meta && this.$route.meta.title) || '主页'
     },
-    username() {
-      return localStorage.getItem('mailweb_user') || 'admin'
+    displayName() {
+      try {
+        const user = JSON.parse(localStorage.getItem('mailweb_user') || '{}')
+        return user.nickname || user.username || '用户'
+      } catch (e) {
+        return '用户'
+      }
     }
   },
+  created() {
+    this.loadMenus()
+  },
   methods: {
+    loadMenus() {
+      try {
+        this.menus = JSON.parse(localStorage.getItem('mailweb_menus') || '[]')
+      } catch (e) {
+        this.menus = []
+      }
+    },
     logout() {
       localStorage.removeItem('mailweb_token')
       localStorage.removeItem('mailweb_user')
+      localStorage.removeItem('mailweb_menus')
       this.$router.replace('/login')
     }
   }

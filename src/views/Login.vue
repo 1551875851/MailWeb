@@ -22,12 +22,14 @@
           </el-button>
         </el-form-item>
       </el-form>
-      <div class="hint">默认账号：admin / admin123</div>
+      <div class="hint">默认超级管理员：admin / admin123</div>
     </el-card>
   </div>
 </template>
 
 <script>
+import { login } from '@/api/auth'
+
 export default {
   name: 'Login',
   data() {
@@ -45,21 +47,22 @@ export default {
   },
   methods: {
     handleLogin() {
-      this.$refs.form.validate(valid => {
+      this.$refs.form.validate(async valid => {
         if (!valid) return
         this.loading = true
-        setTimeout(() => {
-          if (this.form.username === 'admin' && this.form.password === 'admin123') {
-            localStorage.setItem('mailweb_token', 'logged-in')
-            localStorage.setItem('mailweb_user', this.form.username)
-            const redirect = this.$route.query.redirect || '/'
-            this.$router.replace(redirect)
-            this.$message.success('登录成功')
-          } else {
-            this.$message.error('用户名或密码错误')
-          }
+        try {
+          const data = await login(this.form)
+          localStorage.setItem('mailweb_token', data.token)
+          localStorage.setItem('mailweb_user', JSON.stringify(data.user || {}))
+          localStorage.setItem('mailweb_menus', JSON.stringify(data.menus || []))
+          this.$message.success('登录成功')
+          const redirect = this.$route.query.redirect || '/'
+          this.$router.replace(redirect)
+        } catch (e) {
+          this.$message.error(e.message || '登录失败')
+        } finally {
           this.loading = false
-        }, 300)
+        }
       })
     }
   }
@@ -76,18 +79,16 @@ export default {
 }
 .login-card {
   width: 400px;
-  padding: 10px 20px 20px;
 }
 .title {
   text-align: center;
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 24px;
-  color: #303133;
 }
 .hint {
   text-align: center;
   color: #909399;
-  font-size: 12px;
+  font-size: 13px;
 }
 </style>
